@@ -1,6 +1,7 @@
 1) LEGEND:
     developer <- person who will interact with development agent.
-    development agent <- agent which will help developer to create other agents.
+    development agent <- agent in Bob IDE (NOT a custom agent instance) that helps developer create custom agents by providing skills/instructions.
+    Bob IDE <- the IDE environment where the development agent runs.
     User <- person who will interact with the main agent.
     main_agent <- main agent which will be able to interact with the custom agents, it will classify the query and assign corresponding custom agent to it.
     custom_agent <- agent which will be created by the development agent and will be instructed to do given task in the domain it specializes.
@@ -12,10 +13,14 @@
 
 
 2) Development
-    
+
+    2.0) IMPORTANT NOTE:
+        
+        The development agent is NOT a custom agent instance. It is an agent running in Bob IDE that uses the skills defined in section 2.3 to guide the developer through the custom agent creation process. The developer interacts with Bob IDE, and Bob uses these skills as instructions to help create custom agents.
+
     2.1) IDEA:
 
-        I want to build the system where a developer and develpment agent can interact in order to create custom agents tooling/skills/mcp_servers assosieted with particular agetns. These custom agents will be able to interact with the mcp server and use the tools provided by the mcp server and call other custom agents when they notice that particular task falls under their domain. 
+        I want to build the system where a developer and development agent (in Bob IDE) can interact in order to create custom agents tooling/skills/mcp_servers associated with particular agents. These custom agents will be able to interact with the mcp server and use the tools provided by the mcp server and call other custom agents when they notice that particular task falls under their domain.
 
     2.2) PATHS:
 
@@ -25,13 +30,17 @@
         TOOLS_PATH = C:\Users\mgodl\Downloads\bob_hackaton\agents\usage\tools
         CONFIG_PATH = C:\Users\mgodl\Downloads\bob_hackaton\agents\config
 
-    2.3) Implemenation:
+    2.3) Implementation (Skills for Bob IDE Development Agent):
         
-        2.3.1) Specification: Understanding the domain and required specification. -- \agents\development\Specification.md
+        NOTE: The following sections (2.3.1 - 2.3.6) are SKILLS that will be provided to Bob IDE's development agent. These are instruction documents that guide Bob on how to help the developer create custom agents.
+        
+        2.3.1) Specification Skill: Understanding the domain and required specification. -- \agents\development\Specification.md
+            
+            This skill instructs Bob IDE on how to guide the developer through specification creation.
             
             touch CUSTOM_AGENTS_PATH/<custom_agent_name>/specification.md
 
-            Write the document which will instruct the development agent to demand the answers for the developer about the domain and required specification of the custom agent. It should answer the questions like:
+            This document instructs Bob (development agent in IDE) to ask the developer questions about the domain and required specification of the custom agent. It should guide Bob to ask questions like:
                 """
                 2.3.1.1) Basic understanding:
                     What is the domain of the custom agent?
@@ -59,9 +68,11 @@
                 Append the basic understanding of the custom agent in the specification.md file.
                 """
 
-        2.3.2) MCP Server creation module -- agents\development\mcp_creation.md
+        2.3.2) MCP Server Creation Skill -- agents\development\mcp_creation.md
             
-            Write a document which will guide the development agent how to create mcp server with the help of the developer. It should contain:
+            This skill instructs Bob IDE on how to guide the developer through MCP server creation.
+            
+            Write a document which will guide Bob (development agent) on how to help the developer create mcp server. It should contain:
                  MCP Server creation module
                  MCP tool creation module
                  MCP tool description - openai_standard module
@@ -75,9 +86,11 @@
                 - health_check_endpoint: str (optional)
                 - timeout: int (default: 30)
 
-        2.3.3) Tool creation module -- agents\development\tool_creation.md
+        2.3.3) Tool Creation Skill -- agents\development\tool_creation.md
 
-            Write a document which will guide the development agent how to create tool with the help of the developer. It should contain:
+            This skill instructs Bob IDE on how to guide the developer through tool creation.
+            
+            Write a document which will guide Bob (development agent) on how to help the developer create tools. It should contain:
                 Tool format openai_standard
                 Tool creation module
                 Tool description module
@@ -98,9 +111,11 @@
                 - Support retry logic
                 - Return standardized ResponseDataclass
 
-        2.3.4) Skill creation module -- agents\development\skill_creation.md
+        2.3.4) Skill Creation Skill -- agents\development\skill_creation.md
 
-            Write a document which will guide the development agent how to create skill with the help of the developer. It should contain the skill itself but also it should prepare short description of the skill.
+            This skill instructs Bob IDE on how to guide the developer through skill creation.
+            
+            Write a document which will guide Bob (development agent) on how to help the developer create skills. It should contain the skill itself but also it should prepare short description of the skill.
 
             Write a SkillDataclass which could be passed to the custom agent, it should contain all the required information in order to extract the skill body and short definition:
                 - skill_name: str
@@ -110,18 +125,22 @@
                 - usage_examples: list[str] (optional)
                 - related_tools: list[str] (optional)
     
-        2.3.5) Custom prompt creation module -- agents\development\prompt_creation.md
+        2.3.5) Custom Prompt Creation Skill -- agents\development\prompt_creation.md
 
-            Write a document which will guide the development agent how to create custom prompts with the help of the developer. It should contain:
+            This skill instructs Bob IDE on how to guide the developer through custom prompt creation.
+            
+            Write a document which will guide Bob (development agent) on how to help the developer create custom prompts. It should contain:
                 - Prompt structure and best practices
                 - Domain-specific instructions
                 - Tool usage guidelines
                 - Error handling instructions
                 - Examples of good prompts
 
-        2.3.6) Custom agent creation module -- agents\development\agent_creation.md
+        2.3.6) Custom Agent Creation Skill -- agents\development\agent_creation.md
 
-            Write basic agent creation instruction which will instruct the developer agent how to create custom agent. Newly created custom agent class will implement abstract class CustomAgent and should accept tools, mcp servers, skill paths, custom prompt, possible subagents as the init argument. This class will create the agent in the C:\Users\mgodl\Downloads\bob_hackaton\agents\usage\custom_agents folder. And will add this custom agent to the agent_registry.json file, with description and list of available tools, mcp servers and skills for this agent, it will also contain the list of subagents it can call.
+            This skill instructs Bob IDE on how to guide the developer through custom agent creation and assembly.
+            
+            Write basic agent creation instruction which will instruct Bob (development agent) on how to help the developer create custom agent. Newly created custom agent class will implement abstract class CustomAgent and should accept tools, mcp servers, skill paths, custom prompt, possible subagents as the init argument. This class will create the agent in the C:\Users\mgodl\Downloads\bob_hackaton\agents\usage\custom_agents folder. And will add this custom agent to the agent_registry.json file, with description and list of available tools, mcp servers and skills for this agent, it will also contain the list of subagents it can call.
         
             class <agent_name>(CustomAgent):
                 def __init__(self,
