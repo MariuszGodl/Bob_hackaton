@@ -65,7 +65,9 @@ local_tool_registry[local_tool.name] = local_tool
 async def main(
     servers_info: Optional[List[MCPConnection]] = None, 
     tool_registry: Optional[Dict[str, ToolDefinition]] = None,
-    skills: Optional[List[Skill]] = None
+    skills: Optional[List[Skill]] = None,
+    system_prompt: Optional[str] = None,
+    user_query: str = "What is the capital of France?"
 ):
     if servers_info is None:
         servers_info = []
@@ -106,8 +108,11 @@ async def main(
         
         # Prepare all tools for WatsonX
         all_tools = [tool.to_watsonx_schema() for tool in tool_registry.values()]
-        
-        messages = [{"role": "user", "content": "Say somethingmlike the legend slim shady. What is 15 multiplied by 7? Also, what is my current location? Also what are models of watsonx"}]
+
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_query}
+        ]
         
         # Build kwargs dictionary so we ONLY pass tools if they exist
         chat_kwargs = {"messages": messages}
@@ -115,6 +120,7 @@ async def main(
             chat_kwargs["tools"] = all_tools
         
         # 5. First Model Call
+        print(chat_kwargs)
         response = model.chat(**chat_kwargs)
         tool_calls = response["choices"][0]["message"].get("tool_calls", [])
         
@@ -149,7 +155,7 @@ async def main(
                 result_text = mcp_res.content[0].text
             
             msg = {"role": "tool", "tool_call_id": tc["id"], "content": result_text}
-            print("Tool call result:", msg)
+            print(f"Tool '{name}' called with result:", msg)
             messages.append(msg)
         
         # 7. Second Model Call (Get final answer)
@@ -160,9 +166,10 @@ async def main(
 if __name__ == "__main__":
     location_server = MCPConnection(name="Location_Server", port=8000)
     watsonx_mcp_server = MCPConnection(name="Watsonx_Models_Server", port=8001)
-    
+    system_prompt = "You are a helpful assistant that can answer questions and use tools when needed."
+    user_query = "First, use the tool to read the instructions on how to speak like Eminem. Then, using those exact instructions, tell me: What is 9 * 27? Where am I located? What are watsonx available models"
     print("--- Running WITH servers and tools ---")
-    asyncio.run(main([location_server, watsonx_mcp_server], local_tool_registry.copy(), [slim_shady_skill]))
+    asyncio.run(main([location_server, watsonx_mcp_server], local_tool_registry.copy(), [slim_shady_skill], system_prompt, user_query))
     
     # print("\n--- Running WITHOUT servers or tools (LLM Only) ---")
     # asyncio.run(main())
