@@ -2,7 +2,19 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Run MCP Server",
+            "name": "Run IBM watsonx MCP Server",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/agents/usage/mcp_servers/ibm_watsonx_mcp.py",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/.venv/Scripts/python.exe",
+            "cwd": "${workspaceFolder}",
+            "justMyCode": true
+        },
+        // Demo configurations
+
+        {
+            "name": "Run Demo MCP Server",
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/demo/simple_mcp.py",
@@ -12,7 +24,7 @@
             "justMyCode": true
         },
         {
-            "name": "Run Inference with Tool",
+            "name": "Run demo Inference with Tool",
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/demo/inference_with_tool_and_mcp.py",
