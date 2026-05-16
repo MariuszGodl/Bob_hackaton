@@ -14,6 +14,11 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from agents.usage.mcp_servers.ibm_watsonx_mcp import watsonx_mcp_server
 from agents.src.models.mcp_server_model import MCPConnection
 from agents.src.models.tool_model import ToolDefinition
+from agents.src.models.skill_model import Skill
+
+from agents.usage.skills.slim_shady_skill import slim_shady_skill
+
+
 from typing import Dict, List, Optional
 
 api_url = os.getenv("WATSONX_URL")
@@ -59,12 +64,15 @@ local_tool_registry[local_tool.name] = local_tool
 # 2. Make arguments optional with defaults
 async def main(
     servers_info: Optional[List[MCPConnection]] = None, 
-    tool_registry: Optional[Dict[str, ToolDefinition]] = None
+    tool_registry: Optional[Dict[str, ToolDefinition]] = None,
+    skills: Optional[List[Skill]] = None
 ):
     if servers_info is None:
         servers_info = []
     if tool_registry is None:
         tool_registry = {}
+    if skills is None:
+        skills = []
 
     sessions: Dict[str, ClientSession] = {}
     
@@ -91,10 +99,15 @@ async def main(
                 )
                 tool_registry[mcp_tool.name] = mcp_tool
                 
+        for skill in skills:
+            tool = skill.to_tool()
+            tool_registry[tool.name] = tool
+
+        
         # Prepare all tools for WatsonX
         all_tools = [tool.to_watsonx_schema() for tool in tool_registry.values()]
         
-        messages = [{"role": "user", "content": "What is 15 multiplied by 7? Also, what is my current location? Also what are models of watsonx"}]
+        messages = [{"role": "user", "content": "Say somethingmlike the legend slim shady. What is 15 multiplied by 7? Also, what is my current location? Also what are models of watsonx"}]
         
         # Build kwargs dictionary so we ONLY pass tools if they exist
         chat_kwargs = {"messages": messages}
@@ -122,8 +135,13 @@ async def main(
             
             tool_def = tool_registry.get(name)
             
+            if not tool_def:
+                raise ValueError(f"Tool '{name}' not found in registry")
+            
             if tool_def.source == "local":
-                result_text = str(multiply(**args))
+                if not tool_def.callable_func:
+                    raise ValueError(f"Local tool '{name}' has no callable function")
+                result_text = str(tool_def.callable_func(**args))
             else:
                 # Route to the exact session that owns this tool
                 target_session = sessions[tool_def.source]
@@ -144,7 +162,7 @@ if __name__ == "__main__":
     watsonx_mcp_server = MCPConnection(name="Watsonx_Models_Server", port=8001)
     
     print("--- Running WITH servers and tools ---")
-    asyncio.run(main([location_server, watsonx_mcp_server], local_tool_registry.copy()))
+    asyncio.run(main([location_server, watsonx_mcp_server], local_tool_registry.copy(), [slim_shady_skill]))
     
-    print("\n--- Running WITHOUT servers or tools (LLM Only) ---")
-    asyncio.run(main())
+    # print("\n--- Running WITHOUT servers or tools (LLM Only) ---")
+    # asyncio.run(main())
