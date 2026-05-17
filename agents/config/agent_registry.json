@@ -1,0 +1,49 @@
+{
+  "agents": [
+    {
+      "agent_name": "watsonx_general_agent",
+      "agent_class": "WatsonXAgent",
+      "agent_module": "agents.usage.custom_agents.watsons_agent",
+      "description": "General-purpose AI assistant powered by IBM WatsonX with access to various tools, skills, and MCP servers. Can handle text analysis, calculations, code review, and model information queries.",
+      "capabilities": [
+        "text_analysis",
+        "date_calculations",
+        "password_generation",
+        "url_parsing",
+        "bmi_calculation",
+        "code_review",
+        "release_notes_formatting",
+        "watsonx_model_information",
+        "general_assistance"
+      ],
+      "available_tools": [
+        "get_text_statistics",
+        "calculate_days_between",
+        "generate_password",
+        "parse_url",
+        "calculate_bmi"
+      ],
+      "available_mcp_servers": [
+        "Watsonx_Models_Server"
+      ],
+      "available_skills": [
+        "format_release_notes",
+        "code_review_skill"
+      ],
+      "subagents": [],
+      "version": "1.0.0",
+      "status": "active",
+      "priority": 10,
+      "config": {
+        "include_default_skills": true,
+        "include_default_tools": true,
+        "include_watsonx_mcp": true
+      }
+    }
+  ],
+  "metadata": {
+    "version": "1.0.0",
+    "last_updated": "2026-05-17T10:36:00Z",
+    "total_agents": 1
+  }
+}
